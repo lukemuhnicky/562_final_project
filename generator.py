@@ -1,6 +1,7 @@
 import subprocess
 
 from parsephi import parse_phi
+from helpers import where_to_python
 
 simple_input = """
 SELECT ATTRIBUTE(S):
@@ -12,7 +13,7 @@ cust, prod
 F-VECT([F]):
 1_avg_quant, 1_max_quant
 SELECT CONDITION-VECT([o]):
-year=2009
+year = 2009
 HAVING_CONDITION(G):
 NONE
 """
@@ -56,13 +57,27 @@ def main():
 
     agg_functions = simple_phi['agg_functions']
     where_clause = simple_phi['predicates'][0] #this needs to be improved later 
+    where_clause = where_to_python(where_clause)
 
-    body = """
 
-    groupby = {}
+    body = f"""
+
+    groupby = {{}}
     for row in cur: 
-        
-    """
+        {where_clause}
+            key = {', '.join([f"row['{attr}']" for attr in group_by])}
+            if key not in groupby:
+                groupby[key] = [ row[{', '.join(attr for attr in group_by )}]]
+            else:
+                groupby[key].append(row[{', '.join(attr for attr in group_by)}])
+
+        for key in groupby:
+            all_values = groupby[key]
+            {', '.join([f"{func} = sum(all_values) / len(all_values)" for func in agg_functions])}
+            _global.append({{ {', '.join([f"'{attr}': {attr}" for attr in simple_selections])} }})
+        """
+
+
 
     # Note: The f allows formatting with variables.
     #       Also, note the indentation is preserved.
@@ -101,7 +116,7 @@ if "__main__" == __name__:
     """
 
     # Write the generated code to a file
-    open("_generated.py", "w").write(tmp)
+    open("_generated2.py", "w").write(tmp)
     # Execute the generated code
     subprocess.run(["python", "_generated.py"])
 
