@@ -7,6 +7,6 @@ cust, prod
 F-VECT([F]):
 1_avg_quant, 1_max_quant
 SELECT CONDITION-VECT([o]):
-year=2009
+year = 2009
 HAVING_CONDITION(G):
 NONE
