@@ -1,5 +1,37 @@
 import subprocess
 
+from parsephi import parse_phi
+from helpers import where_to_python
+
+simple_input = """
+SELECT ATTRIBUTE(S):
+cust, prod, avg(quant), max(quant) 
+NUMBER OF GROUPING VARIABLES(n):
+0
+GROUPING ATTRIBUTES(V):
+cust, prod
+F-VECT([F]):
+1_avg_quant, 1_max_quant
+SELECT CONDITION-VECT([o]):
+year = 2009
+HAVING_CONDITION(G):
+NONE
+"""
+
+'''
+simple phi looks like 
+{
+    'select': ['cust', 'prod', 'avg(quant)', 'max(quant)'], 
+    'no_group_var': 0, 
+    'group_attribute': ['cust', 'prod'], 
+    'agg_functions': ['1_avg_quant', '1_max_quant'], 
+    'predicates': ['year=2009'], 
+    'having': 'NONE'
+}
+'''
+
+# Parse the input in another file to get the phi structure
+simple_phi = parse_phi()
 
 def main():
     """
@@ -8,11 +40,44 @@ def main():
     file (e.g. _generated.py) and then run.
     """
 
-    body = """
-    for row in cur:
-        if row['quant'] > 10:
-            _global.append(row)
-    """
+    #Destructureing the phi into variables that are easier for us
+
+    #seperate the simple selections from the aggregates
+    simple_selections = [simple_phi for selection in simple_phi['select'] if '(' not in selection]
+    agg_selections = [simple_phi for selection in simple_phi['select'] if '(' in selection]
+    group_by = simple_phi['group_attribute']
+
+    #seperate the aggregates into their respective functions and generate the string
+    for func in simple_phi['agg_functions']:
+        args = func.split('_')
+        
+
+        
+
+
+    agg_functions = simple_phi['agg_functions']
+    where_clause = simple_phi['predicates'][0] #this needs to be improved later 
+    where_clause = where_to_python(where_clause)
+
+
+    body = f"""
+
+    groupby = {{}}
+    for row in cur: 
+        {where_clause}
+            key = {', '.join([f"row['{attr}']" for attr in group_by])}
+            if key not in groupby:
+                groupby[key] = [ row[{', '.join(attr for attr in group_by )}]]
+            else:
+                groupby[key].append(row[{', '.join(attr for attr in group_by)}])
+
+        for key in groupby:
+            all_values = groupby[key]
+            {', '.join([f"{func} = sum(all_values) / len(all_values)" for func in agg_functions])}
+            _global.append({{ {', '.join([f"'{attr}': {attr}" for attr in simple_selections])} }})
+        """
+
+
 
     # Note: The f allows formatting with variables.
     #       Also, note the indentation is preserved.
@@ -51,7 +116,7 @@ if "__main__" == __name__:
     """
 
     # Write the generated code to a file
-    open("_generated.py", "w").write(tmp)
+    open("_generated2.py", "w").write(tmp)
     # Execute the generated code
     subprocess.run(["python", "_generated.py"])
 
