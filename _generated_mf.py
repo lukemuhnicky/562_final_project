@@ -4,7 +4,6 @@ import psycopg2
 import psycopg2.extras
 import tabulate
 from dotenv import load_dotenv
-from parsephi import parse_phi
 from helpers import update_agg_value
 
 
@@ -12,15 +11,15 @@ from helpers import update_agg_value
 
 """
 SELECT ATTRIBUTE(S):
-cust, 1_avg_quant, 2_avg_quant, 3_avg_quant
+cust, 0_sum_quant, 1_sum_quant, 2_sum_quant, 3_sum_quant
 NUMBER OF GROUPING VARIABLES(n):
 3
 GROUPING ATTRIBUTES(V):
 cust
 F-VECT([F]):
-1_avg_quant, 2_avg_quant, 3_avg_quant
+0.year = 2018, 1_avg_quant, 2_avg_quant, 3_avg_quant
 SELECT CONDITION-VECT([o]):
-1.state = 'NY' and 1.year = 2018, 2.state = 'NJ and 2.year = 2018, 3.state = 'CT' and 3.year = 2018
+    0.year = 2018, 1.state = 'NY' and 1.year = 2018, 2.state = 'NJ and 2.year = 2018, 3.state = 'CT' and 3.year = 2018
 HAVING_CONDITION(G):
 NONE
 """
@@ -29,11 +28,10 @@ NONE
 
 def query():
     load_dotenv()
-    mf_phi = parse_phi("mfinput.txt")
     user = os.getenv('USER')
     password = os.getenv('PASSWORD')
     dbname = os.getenv('DBNAME')
-
+    
     conn = psycopg2.connect("dbname="+dbname+" user="+user+" password="+password,
                             cursor_factory=psycopg2.extras.DictCursor)
     cur = conn.cursor()
@@ -48,6 +46,7 @@ def query():
         key = row['cust']
         if key not in groupby:
             groupby[key] = {
+                    '0_sum_quant' : 0,
                     '1_avg_quant' : [0,0], #1st is sum, 2nd is count
                     '1_sum_quant' : 0,
                     '2_sum_quant' : 0,
@@ -58,18 +57,21 @@ def query():
             pass
     for row in data: 
         grouping_attr = row['cust']
-        grouping_var = 0
-        if row['state'] == 'NJ' and row['year'] == 2017:
-            grouping_var = 1
-        elif row['state'] == 'CT' and row['year'] == 2017:
-            grouping_var = 2
-        elif row['state'] == 'NY' and row['year'] == 2017:
-            grouping_var = 3
-        else: 
+        if row['year'] == 2018:
+            grouping_var = 0
+            if row['state'] == 'NJ' and row['year'] == 2018:
+                grouping_var = 1
+            elif row['state'] == 'CT' and row['year'] == 2018:
+                grouping_var = 2
+            elif row['state'] == 'NY' and row['year'] == 2018:
+                grouping_var = 3
+        else:
             continue
         
         wechanging = groupby[grouping_attr]
-        update_agg_value(wechanging, grouping_var, row)
+        update_agg_value(wechanging, 0, row)
+        if grouping_var != 0:
+            update_agg_value(wechanging, grouping_var, row)
 
         
     #check if we have any averages and change them
@@ -85,7 +87,7 @@ def query():
     # result = re.split(r'\b(?:and|or)\b', input_string)
     ## 1_sum_quant > 2 * 2_sum_quant or 1_avg_quant > 3_avg_quant
         if (groupby[grouping_attr_key]['1_sum_quant'] > 2 * groupby[grouping_attr_key]['2_sum_quant'] or groupby[grouping_attr_key]['1_avg_quant'] > groupby[grouping_attr_key]['3_avg_quant']):
-            _global.append({'cust': grouping_attr_key, '1_sum_quant': groupby[grouping_attr_key]['1_sum_quant'], '2_sum_quant': groupby[grouping_attr_key]['2_sum_quant'], '3_sum_quant': groupby[grouping_attr_key]['3_sum_quant']})
+            _global.append({'cust': grouping_attr_key, '0_sum_quant': groupby[grouping_attr_key]['0_sum_quant'],'1_sum_quant': groupby[grouping_attr_key]['1_sum_quant'], '2_sum_quant': groupby[grouping_attr_key]['2_sum_quant'], '3_sum_quant': groupby[grouping_attr_key]['3_sum_quant']})
         
     return tabulate.tabulate(_global,
                         headers="keys", tablefmt="psql")

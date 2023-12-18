@@ -1,20 +1,10 @@
 import re
-def where_to_python(where_clause):
-    #input is like year = 2009
-    operators = {
-        '=': '==',
-        '<>': '!=',
-        '<': '<',
-        '>': '>',
-        '<=': '<=',
-        '>=': '>='
-    }
-    where_clause = where_clause.split()
-    operator = operators[where_clause[1]]
-    return f"if row['{where_clause[0]}'] {operator} {where_clause[2]}:"
 
 
-def having_to_python(input_str):
+def where_to_pa
+
+
+def having_clause_to_py(input_str):
     operators = {
         '=': '==',
         '<>': '!=',
@@ -30,9 +20,9 @@ def having_to_python(input_str):
         # Replace patterns like '1_sum_quant' with 'groupby[cust_key]['1_sum_quant']'
         elif re.match(r'\d+_[a-zA-Z_]+', word):
             words[i] = f"groupby[cust_key]['{word}']"
-    return ' '.join(words)
+    return f'''if {' '.join(words)}:'''
 
-print(having_to_python("1_sum_quant > 2 * 2_sum_quant or 1_avg_quant > 3_avg_quant"))
+
 
 def update_agg_value(agg_table, grouping_variable, row):
     for func in agg_table:
@@ -59,3 +49,83 @@ def update_agg_value(agg_table, grouping_variable, row):
             raise Exception("Invalid aggregate function. You are a buffoon.")
             pass
         agg_table[func] = starting_val
+
+
+def grouping_attr_to_py(grouping_attrs):
+    result_string = ""
+    if len(grouping_attrs) == 1:
+        return f"row['{grouping_attrs[0]}']"
+    else:
+        for index, grouping_attr in enumerate(grouping_attrs):
+            if index == len(grouping_attrs) - 1:
+                result_string += f"row['{grouping_attr}']"
+            else:
+                result_string += f'''row['{grouping_attr}'] + "," +'''
+    return result_string
+
+
+def add_to_groupby(agg_funcs, indentation_level):
+    indent = "\t" * indentation_level
+    result_string = ""
+    for agg_func in agg_funcs:
+        if 'avg' in agg_func:
+            result_string += f'''{agg_func} = [0,0],\n{indent}'''
+        elif 'min' in agg_func:
+            result_string += f'''{agg_func} = float('inf'),\n0{indent}'''
+        elif 'max' in agg_func:
+            result_string += f'''{agg_func} = float('-1'),\n{indent}'''
+        else:
+            result_string += f'''{agg_func} = 0,\n{indent}'''
+    return result_string
+
+
+'''
+year = 2018
+'''
+
+def predicates_to_dict(predicate_list):
+    result_dict = {}
+
+    for predicate in predicate_list:
+        predicate = predicate.split(' ')
+        operators = {
+            '=': '==',
+            '<>': '!=',
+            '<': '<',
+            '>': '>',
+            '<=': '<=',
+            '>=': '>='
+        }
+        grouping_var = 0
+        for i, word in enumerate(predicate):
+            if word in operators:
+                predicate[i] = operators[word]
+            # Replace patterns like '1_sum_quant' with 'groupby[cust_key]['1_sum_quant']'
+            elif re.match(r'\d+.[a-zA-Z_]+', word):
+                grouping_var = int(word[0])
+                predicate[i] = f"row['{word[2:]}']"
+        if grouping_var not in result_dict:
+            result_dict[grouping_var] = f'''if {' '.join(predicate)}:'''
+    return result_dict
+
+def where_clause_from_predicates_to_py(predicate_dict):
+    if predicate_dict[0]:
+        return predicate_dict[0]
+    else:
+        return 'if True:'
+    
+def predicate_clause_from_predicates_to_py(predicate_dict, indentation_level):
+    indent = "\t" * indentation_level
+    result_string = ""
+    first_done = False
+    for key in predicate_dict:
+        if key == 0:
+            continue
+        elif first_done == False: 
+            result_string += f'''{predicate_dict[key]}
+{indent}\tgrouping_var = {key}\n'''
+            first_done = True
+        else:
+            result_string += f'''{indent}el{predicate_dict[key]}
+{indent}\t grouping_var = {key}\n'''
+    return result_string

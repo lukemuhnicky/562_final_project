@@ -1,8 +1,7 @@
 import subprocess
 
 from parsephi import parse_phi
-from helpers import where_to_python
-
+from helpers import grouping_attr_to_py, add_to_groupby, predicates_to_dict, where_clause_from_predicates_to_py, predicate_clause_from_predicates_to_py, having_clause_to_py
 simple_input = """
 SELECT ATTRIBUTE(S):
 cust, prod, avg(quant), max(quant) 
@@ -46,38 +45,61 @@ def main():
     simple_selections = [simple_phi for selection in simple_phi['select'] if '(' not in selection]
     agg_selections = [simple_phi for selection in simple_phi['select'] if '(' in selection]
     group_by = simple_phi['group_attribute']
-
-    #seperate the aggregates into their respective functions and generate the string
-    for func in simple_phi['agg_functions']:
-        args = func.split('_')
-        
-
-        
-
-
     agg_functions = simple_phi['agg_functions']
-    where_clause = simple_phi['predicates'][0] #this needs to be improved later 
-    where_clause = where_to_python(where_clause)
+
+
+    '''
+    simple phi looks like 
+    {
+        'select': ['cust', '1_sum_quant', '2_sum_quant', '3_sum_quant'], 
+        'no_group_var': 3, 
+        'group_attribute': ['cust'], 
+        'agg_functions': ['1_avg_quant', '1_sum_quant', '2_sum_quant', '3_avg_quant', '3_sum_quant'], 
+        'predicates': ["0.year = 2018", "1.state = 'NY' and 1.year = 2018", "2.state = 'NJ' and 2.year = 2018", "3.state = 'CT' and 3.year = 2018"], 
+        'having': 'NONE'
+    }
+    '''
+    #seperate the aggregates into their respective functions and generate the strin
+    no_grouping_vars = simple_phi['no_group_var']
+    grouping_vars = [f"{i+1}" for i in range(1,no_grouping_vars)]
+
+    predicates_dict = predicates_to_dict(simple_phi['predicates'])
+    
 
 
     body = f"""
-
     groupby = {{}}
-    for row in cur: 
-        {where_clause}
-            key = {', '.join([f"row['{attr}']" for attr in group_by])}
-            if key not in groupby:
-                groupby[key] = [ row[{', '.join(attr for attr in group_by )}]]
-            else:
-                groupby[key].append(row[{', '.join(attr for attr in group_by)}])
-
-        for key in groupby:
-            all_values = groupby[key]
-            {', '.join([f"{func} = sum(all_values) / len(all_values)" for func in agg_functions])}
-            _global.append({{ {', '.join([f"'{attr}': {attr}" for attr in simple_selections])} }})
+    for row in data:
+        key = {grouping_attr_to_py(simple_phi['group_attribute'])}
+        if key not in groupby:
+            groupby[key] = {{
+                {add_to_groupby(agg_functions, 4)}
+            }}
+        else:
+            pass        
+    for row in data:
+        grouping_attr = {grouping_attr_to_py(simple_phi['group_attribute'])}
+        {where_clause_from_predicates_to_py(predicates_dict)}
+            grouping_var = 0 
+            {predicate_clause_from_predicates_to_py(predicates_dict, 3)}
+            
+        else:
+            continue
+        change_group = groupby[grouping_attr]
+        update_agg_value(change_group, 0, row)
+        if grouping_var != 0:
+            update_agg_value(change_group, grouping_var, row)
+            
+            
+    for grouping_attr_key, grouping_attr in groupby.items():
+        for agg_func_key, agg_func in grouping_attr.items():
+            if 'avg' in agg_func_key:
+                avg_list = groupby[grouping_attr_key][agg_func_key]
+                groupby[grouping_attr_key][agg_func_key] = avg_list[0]/avg_list[1] 
+            
+        {having_clause_to_py(simple_phi['having'])}
+            _global.append({{}})
         """
-
-
 
     # Note: The f allows formatting with variables.
     #       Also, note the indentation is preserved.
