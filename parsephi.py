@@ -23,8 +23,8 @@ phi_operator = {
 
 # query = open("simpleinput.txt", "r")
 
-def parse_phi():
-    query = open("simpleinput.txt", "r")
+def parse_phi(file_location):
+    query = open(file_location, "r")
     phi_operator = {
         'select': None,
         'no_group_var' : None, 
@@ -53,5 +53,5 @@ def parse_phi():
 # query = open("simpleinput.txt", "r")
 
 # print(phi_operator)
-print(parse_phi())
+print(parse_phi("mfinput.txt"))
 # query.close()
