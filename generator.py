@@ -58,6 +58,38 @@ def main():
     agg_functions = simple_phi['agg_functions']
     where_clause = simple_phi['predicates'][0] #this needs to be improved later 
     where_clause = where_to_python(where_clause)
+    tracking_values = []
+
+    # Generate what we're aggregating
+    for func in agg_functions:
+        args = func.split('_')
+        group_var = args[0]
+        agg_func = args[1]
+        tracked_val = args[2]
+        
+        if tracked_val not in tracking_values:
+            tracking_values.append(tracked_val)
+        
+
+        if args[1] == 'avg':
+            body = f"{args[1]} = sum(all_values) / len(all_values)"
+        elif args[1] == 'max':
+            body = f"{args[1]} = max(all_values)"
+        elif args[1] == 'min':
+            body = f"{args[1]} = min(all_values)"
+        elif args[1] == 'count':
+            body = f"{args[1]} = len(all_values)"
+        elif args[1] == 'sum':
+            body = f"{args[1]} = sum(all_values)"
+        else:
+            raise Exception(f"Unknown aggregate function {args[1]}")
+        
+
+    # Note: The f allows formatting with variables.
+    #       Also, note the indentation is preserved.
+
+
+
 
 
     body = f"""

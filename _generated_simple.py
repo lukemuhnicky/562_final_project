@@ -12,10 +12,10 @@ where year=2017
 group by cust, prod
 
 {
-'select': ['cust', 'prod', 'avg(quant)', 'max(quant)'], 
+'select': ['cust', 'prod', '0_avg_quant', '0_max_quant', 
 'no_group_var': 0, 
 'group_attribute': ['cust', 'prod'], 
-'agg_functions': ['1_avg_quant', '1_max_quant'], 
+'agg_functions': ['0_avg_quant', '0_max_quant'], 
 'predicates': ['year=2017'], 
 'having': ['NONE']
 }
@@ -37,7 +37,14 @@ def query():
     
     _global = []
 
-    groupby= {}
+    groupby= {
+        'phil, kfc' : {
+            '0_count_quant': 1,
+            'nj_count_quant': 1,
+            'pa_count_quant': 0,
+        }
+
+    }
     # Table Scan 1: Get the value of 
     for row in cur:
         if row['year'] == 2017:
