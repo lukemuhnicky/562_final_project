@@ -16,7 +16,7 @@ def having_clause_to_py(input_str):
             words[i] = operators[word]
         # Replace patterns like '1_sum_quant' with 'groupby[cust_key]['1_sum_quant']'
         elif re.match(r'\d+_[a-zA-Z_]+', word):
-            words[i] = f"groupby[cust_key]['{word}']"
+            words[i] = f"groupby[grouping_attr_key]['{word}']"
     return f'''if {' '.join(words)}:'''
 
 
@@ -66,13 +66,13 @@ def add_to_groupby(agg_funcs, indentation_level):
     result_string = ""
     for agg_func in agg_funcs:
         if 'avg' in agg_func:
-            result_string += f'''{agg_func} = [0,0],\n{indent}'''
+            result_string += f''' '{agg_func}' : [0,0],\n{indent}'''
         elif 'min' in agg_func:
-            result_string += f'''{agg_func} = float('inf'),\n0{indent}'''
+            result_string += f''' '{agg_func}' : float('inf'),\n0{indent}'''
         elif 'max' in agg_func:
-            result_string += f'''{agg_func} = float('-1'),\n{indent}'''
+            result_string += f''' '{agg_func}' : float('-1'),\n{indent}'''
         else:
-            result_string += f'''{agg_func} = 0,\n{indent}'''
+            result_string += f''' '{agg_func}' : 0,\n{indent}'''
     return result_string
 
 
@@ -124,5 +124,13 @@ def predicate_clause_from_predicates_to_py(predicate_dict, indentation_level):
             first_done = True
         else:
             result_string += f'''{indent}el{predicate_dict[key]}
-{indent}\t grouping_var = {key}\n'''
+{indent}\tgrouping_var = {key}\n'''
+    return result_string
+
+def select_to_append_py(select_list, grouping_vars):
+    print(select_list, grouping_vars)
+    result_string = f''' '{','.join(grouping_vars)}': grouping_attr_key,'''
+    for selection in select_list:
+        if re.match(r'\d+_[a-zA-Z_]+', selection):
+            result_string += f''''{selection}':groupby[grouping_attr_key]['{selection}'],'''
     return result_string
