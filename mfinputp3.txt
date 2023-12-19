@@ -1,0 +1,12 @@
+SELECT ATTRIBUTE(S):
+cust, prod, 1_min_quant, 1_max_quant, 2_min_quant, 2_max_quant
+NUMBER OF GROUPING VARIABLES(n):
+2
+GROUPING ATTRIBUTES(V):
+cust, prod
+F-VECT([F]):
+1_min_quant, 1_max_quant, 2_min_quant, 2_max_quant
+SELECT CONDITION-VECT([o]):
+1.year = 2018 and 1.state = 'PA', 2.year = 2018 and 2.state = 'NJ'
+HAVING_CONDITION(G):
+1_min_quant > 2_min_quant

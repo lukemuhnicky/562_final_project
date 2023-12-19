@@ -53,5 +53,4 @@ def parse_phi(file_location):
 # query = open("simpleinput.txt", "r")
 
 # print(phi_operator)
-print(parse_phi("mfinput.txt"))
 # query.close()
