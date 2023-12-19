@@ -1,9 +1,6 @@
 import re
 
 
-def where_to_pa
-
-
 def having_clause_to_py(input_str):
     operators = {
         '=': '==',
