@@ -1,4 +1,0 @@
-select cust, prod, avg(quant), max(quant) 
-from sales
-where year=2009 
-group by cust, prod
