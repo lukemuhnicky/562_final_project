@@ -1,0 +1,12 @@
+SELECT ATTRIBUTE(S):
+prod, 1_max_quant, 2_max_quant
+NUMBER OF GROUPING VARIABLES(n):
+2
+GROUPING ATTRIBUTES(V):
+prod
+F-VECT([F]):
+1_max_quant, 2_max_quant
+SELECT CONDITION-VECT([o]):
+1.prod = prod and 1.state = 'NJ', 2.prod = prod and 2.year = 2019
+HAVING_CONDITION(G):
+NONE
