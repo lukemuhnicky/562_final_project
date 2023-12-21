@@ -1,12 +1,12 @@
 SELECT ATTRIBUTE(S):
-cust, 0_sum_quant, 1_sum_quant, 2_sum_quant, 3_sum_quant
+cust, 1_sum_quant, 2_sum_quant
 NUMBER OF GROUPING VARIABLES(n):
-3
+2
 GROUPING ATTRIBUTES(V):
-cust
+cust, prod
 F-VECT([F]):
-0_sum_quant, 1_avg_quant, 1_sum_quant, 2_sum_quant, 3_avg_quant, 3_sum_quant
+1_sum_quant, 2_sum_quant
 SELECT CONDITION-VECT([o]):
-0.year = 2018, 1.cust = cust and 1.state = 'NY' and 1.year = 2018, 2.cust = cust and 2.state = 'NJ' and 2.year = 2018, 3.cust = cust and 3.state = 'CT' and 3.year = 2018
+0.year = 2017, 1.cust = cust and 2.prod = prod, 2.cust = cust and 2.prod <> prod
 HAVING_CONDITION(G):
-1_sum_quant > 2 * 2_sum_quant or 1_avg_quant > 3_avg_quant
+NONE
