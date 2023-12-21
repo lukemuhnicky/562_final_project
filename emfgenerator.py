@@ -63,13 +63,11 @@ def generate_emf(phi, file_name):
     grouping_vars = [f"{i+1}" for i in range(1,no_grouping_vars)]
 
     predicates_dict = predicates_to_dict(phi['predicates'])
-    print(agg_functions)
     tracking_vars = set()
     for key in agg_functions:
         num = key.split('_')[0]
         tracking_vars.add(num)
     
-    print("we are tracking", tracking_vars)
     table_scans = ""
     tracking_vars = sorted(tracking_vars)
     for num in tracking_vars:
