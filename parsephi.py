@@ -1,27 +1,29 @@
 '''
+example input:
 SELECT ATTRIBUTE(S):
-cust, prod, avg(quant), max(quant) 
+cust, 0_sum_quant, 1_sum_quant, 2_sum_quant, 3_sum_quant
 NUMBER OF GROUPING VARIABLES(n):
-0
+3
 GROUPING ATTRIBUTES(V):
-cust, prod
+cust
 F-VECT([F]):
-1_avg_quant, 1_max_quant
+0_sum_quant, 1_avg_quant, 1_sum_quant, 2_sum_quant, 3_avg_quant, 3_sum_quant
 SELECT CONDITION-VECT([o]):
-year=2009
+0.year = 2018, 1.state = 'NY' and 1.year = 2018, 2.state = 'NJ' and 2.year = 2018, 3.state = 'CT' and 3.year = 2018
 HAVING_CONDITION(G):
-NONE
+1_sum_quant > 2 * 2_sum_quant or 1_avg_quant > 3_avg_quant
+
+example output:
 phi_operator = {
-    'select' : [cust, count(ny.quant), sum(nj.quant), max(ct.quant)],
-    'no_group_var' : 3,
-    'group_attribute' : 'cust',
-    'agg_functions' : [count(ny.quant), sum(nj.quant), max(ct.quant), avg(ny.quant)],
-    'predicates' : [ny.cust = cust, ny.state = 'NY', ...],
-    'having': []
+    'select': ['cust', '1_sum_quant', '2_sum_quant', '3_sum_quant'], 
+    'no_group_var': 3, 
+    'group_attribute': ['cust'], 
+    'agg_functions': ['1_avg_quant', '1_sum_quant', '2_sum_quant', '3_avg_quant', '3_sum_quant'], 
+    'predicates': ["0.year = 2018", "1.state = 'NY' and 1.year = 2018", "2.state = 'NJ' and 2.year = 2018", "3.state = 'CT' and 3.year = 2018"], 
+    'having': '1_sum_quant > 2 * 2_sum_quant or 1_avg_quant > 3_avg_quant'
 }
 '''
 
-# query = open("simpleinput.txt", "r")
 
 def parse_phi(file_location):
     query = open(file_location, "r")

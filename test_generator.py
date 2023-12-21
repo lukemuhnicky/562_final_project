@@ -1,4 +1,4 @@
-from generator import main as generator
+from mfgenerator import main as generator
 from _generated import query as _generated
 
 from sql import query as sql
