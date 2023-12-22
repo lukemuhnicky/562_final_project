@@ -1,3 +1,15 @@
+'''
+Names: Phillip Anerine and Luke Muhnicky
+CWIDs: 10461808 and 10467004
+'''
+
+'''
+This is our generator for MF_Query code.
+We utilized a variety of helper functions (see helpers.py)
+Updating all aggregates requires only one for loop!
+'''
+
+
 import subprocess
 
 from parsephi import parse_phi
@@ -68,8 +80,8 @@ def main():
     predicates_dict = predicates_to_dict(simple_phi['predicates'])
     
 
-
     body = f"""
+    # Step 1: Get the unique groupby values (our mf_struct)
     groupby = {{}}
     for row in data:
         key = {grouping_attr_to_py(simple_phi['group_attribute'])}
@@ -79,6 +91,8 @@ def main():
             }}
         else:
             pass        
+    
+    # Step 2: Iterate through the table, updating the aggregates.
     for row in data:
         grouping_attr = {grouping_attr_to_py(simple_phi['group_attribute'])}
         {where_clause_from_predicates_to_py(predicates_dict)}
@@ -91,7 +105,8 @@ def main():
         if grouping_var != 0:
             update_agg_value(change_group, grouping_var, row)
             
-            
+    
+    # Step 3: Update avg values (sum, count) and avoid divide-by-zero errors.
     for grouping_attr_key, grouping_attr in groupby.items():
         for agg_func_key, agg_func in grouping_attr.items():
             if 'avg' in agg_func_key:
@@ -100,6 +115,7 @@ def main():
                     groupby[grouping_attr_key][agg_func_key] = 0
                 else:
                     groupby[grouping_attr_key][agg_func_key] = avg_list[0]/avg_list[1] 
+        # Step 4 Filter out with the having clause!
         {having_clause_to_py(simple_phi['having'])}
             _global.append({{{select_to_append_py( selections, group_by )}}})
         """

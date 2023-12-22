@@ -1,3 +1,17 @@
+'''
+Names: Phillip Anerine and Luke Muhnicky
+CWIDs: 10461808 and 10467004
+'''
+
+'''
+This is our generator for EMF queries. 
+Unlike the MF queries, our logic closely mirrors what was provided on the PDF.
+Same structure, but we incorporated more helper functions.
+
+'''
+
+
+
 import subprocess
 from helpers import grouping_attr_to_py, add_to_groupby, predicates_to_dict, where_clause_from_predicates_to_py, predicate_clause_from_predicates_to_py, having_clause_to_py, select_to_append_py, attrs_to_items_py, emf_predicates_to_py, attrs_to_item_names
 simple_input = """
@@ -58,7 +72,7 @@ def generate_emf(phi, file_name):
         'having': 'NONE'
     }
     '''
-    #seperate the aggregates into their respective functions and generate the strin
+    #seperate the aggregates into their respective functions and generate the string
     no_grouping_vars = phi['no_group_var']
     grouping_vars = [f"{i+1}" for i in range(1,no_grouping_vars)]
 
@@ -70,6 +84,7 @@ def generate_emf(phi, file_name):
     
     table_scans = ""
     tracking_vars = sorted(tracking_vars)
+    # Number of loops = number of grouping variables.
     for num in tracking_vars:
         table_scans += f'''
     for row in data:
@@ -81,6 +96,7 @@ def generate_emf(phi, file_name):
                 for item in grouping_attrs:
                     if item.isnumeric():
                         grouping_attrs[grouping_attrs.index(item)] = int(item)
+                # Generated code as seen in helper.py methods.
                 {attrs_to_items_py(group_by, 4)}
                 {emf_predicates_to_py(phi['predicates'], attrs_to_item_names(group_by), num)}
                     grouping_var = {num}
@@ -89,8 +105,9 @@ def generate_emf(phi, file_name):
                 change_group = groupby[key]
                 update_agg_value(change_group, grouping_var, row)
             '''
-
+    # Same process as before!
     body = f"""
+    # Step 1: Gather unique "groupby"s (mf_struct)
     groupby = {{}}
     for row in data:
         key = {grouping_attr_to_py(phi['group_attribute'])}
@@ -99,8 +116,11 @@ def generate_emf(phi, file_name):
                 {add_to_groupby(agg_functions, 4)}
             }}
         else:
-            pass   
+            pass
+    # Step 2: Instead of one pass, this is now based on the number of grouping variables.
+    # Iterate through and check predicates.
     {table_scans}
+    # Step 3: Revise averages, just like in an MF Query
     for grouping_attr_key, grouping_attr in groupby.items():
         for agg_func_key, agg_func in grouping_attr.items():
             if 'avg' in agg_func_key:
@@ -109,6 +129,7 @@ def generate_emf(phi, file_name):
                     groupby[grouping_attr_key][agg_func_key] = 0
                 else:
                     groupby[grouping_attr_key][agg_func_key] = avg_list[0]/avg_list[1] 
+    # Step 4: Filter out table using the having clause.
         {having_clause_to_py(phi['having'])}
             _global.append({{{select_to_append_py( selections, group_by )}}})
         """

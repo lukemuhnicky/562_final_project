@@ -1,6 +1,12 @@
 import re
 
 '''
+Names: Phillip Anerine and Luke Muhnicky
+CWIDs: 10461808 and 10467004
+'''
+
+
+'''
 This converts a having clause phi operator into Python code.
 Input - Having clause from phi operator
 Output - Generated Python code 
