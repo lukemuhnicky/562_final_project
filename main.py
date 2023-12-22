@@ -46,7 +46,7 @@ def main():
     phi = {}
     if input_type == 'Text file':
         txt_file = input("Please enter the name of the text file (including .txt) you would like to use: ")
-        phi = parsephi.parse_phi(txt_file)
+        phi = parsephi.parse_phi(f'_input/{txt_file}')
     elif input_type == 'Manual input':
         select = []
         while True:
