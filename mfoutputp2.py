@@ -29,11 +29,10 @@ def query():
         if key not in groupby:
             groupby[key] = {
                  '0_sum_quant' : 0,
-                 '1_avg_quant' : [0,0],
-                 '1_sum_quant' : 0,
-                 '2_sum_quant' : 0,
-                 '3_avg_quant' : [0,0],
-                 '3_sum_quant' : 0,
+                 '0_min_quant' : float('inf'),
+                 '0_max_quant' : float('-1'),
+                 '0_avg_quant' : [0,0],
+                 '0_count_quant' : 0,
                 
             }
         else:
@@ -42,13 +41,7 @@ def query():
         grouping_attr = str(row['cust'])
         if row['year'] == 2018:
             grouping_var = 0 
-            if row['state'] == 'NY' and row['year'] == 2018:
-                grouping_var = 1
-            elif row['state'] == 'NJ' and row['year'] == 2018:
-                grouping_var = 2
-            elif row['state'] == 'CT' and row['year'] == 2018:
-                grouping_var = 3
-
+            
         else:
             continue
         change_group = groupby[grouping_attr]
@@ -65,8 +58,8 @@ def query():
                     groupby[grouping_attr_key][agg_func_key] = 0
                 else:
                     groupby[grouping_attr_key][agg_func_key] = avg_list[0]/avg_list[1] 
-        if groupby[grouping_attr_key]['1_sum_quant'] > 2 * groupby[grouping_attr_key]['2_sum_quant'] or groupby[grouping_attr_key]['1_avg_quant'] > groupby[grouping_attr_key]['3_avg_quant']:
-            _global.append({ 'cust': grouping_attr_key,'0_sum_quant':groupby[grouping_attr_key]['0_sum_quant'],'1_sum_quant':groupby[grouping_attr_key]['1_sum_quant'],'2_sum_quant':groupby[grouping_attr_key]['2_sum_quant'],'3_sum_quant':groupby[grouping_attr_key]['3_sum_quant'],})
+        if True:
+            _global.append({ 'cust': grouping_attr_key,'0_sum_quant':groupby[grouping_attr_key]['0_sum_quant'],'0_min_quant':groupby[grouping_attr_key]['0_min_quant'],'0_max_quant':groupby[grouping_attr_key]['0_max_quant'],'0_avg_quant':groupby[grouping_attr_key]['0_avg_quant'],'0_count_quant':groupby[grouping_attr_key]['0_count_quant'],})
         
     
     return tabulate.tabulate(_global,

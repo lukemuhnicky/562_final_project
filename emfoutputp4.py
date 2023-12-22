@@ -26,15 +26,11 @@ def query():
     # Step 1: Gather unique "groupby"s (mf_struct)
     groupby = {}
     for row in data:
-        key = str(row['cust'])
+        key = str(row['month'])
         if key not in groupby:
             groupby[key] = {
-                 '0_sum_quant' : 0,
-                 '1_avg_quant' : [0,0],
-                 '1_sum_quant' : 0,
-                 '2_sum_quant' : 0,
-                 '3_avg_quant' : [0,0],
-                 '3_sum_quant' : 0,
+                 '1_max_quant' : float('-1'),
+                 '2_max_quant' : float('-1'),
                 
             }
         else:
@@ -43,8 +39,8 @@ def query():
     # Iterate through and check predicates.
     
     for row in data:
-        grouping_attr = str(row['cust'])
-        if row['year'] == 2018:
+        grouping_attr = str(row['month'])
+        if True:
             for key in groupby:
                 grouping_var = 0 
                 grouping_attrs = key.split(',')
@@ -52,28 +48,9 @@ def query():
                     if item.isnumeric():
                         grouping_attrs[grouping_attrs.index(item)] = int(item)
                 # Generated code as seen in helper.py methods.
-                item_cust = grouping_attrs[0]
+                item_month = grouping_attrs[0]
                 
-                if item_cust == row['cust']:
-                    grouping_var = 0
-                else:
-                    continue
-                change_group = groupby[key]
-                update_agg_value(change_group, grouping_var, row)
-            
-    for row in data:
-        grouping_attr = str(row['cust'])
-        if row['year'] == 2018:
-            for key in groupby:
-                grouping_var = 0 
-                grouping_attrs = key.split(',')
-                for item in grouping_attrs:
-                    if item.isnumeric():
-                        grouping_attrs[grouping_attrs.index(item)] = int(item)
-                # Generated code as seen in helper.py methods.
-                item_cust = grouping_attrs[0]
-                
-                if row['cust'] ==  item_cust  and row['state'] == 'NY' and row['year'] == 2018:
+                if row['month'] ==  item_month  and row['state'] == 'NJ':
                     grouping_var = 1
                 else:
                     continue
@@ -81,8 +58,8 @@ def query():
                 update_agg_value(change_group, grouping_var, row)
             
     for row in data:
-        grouping_attr = str(row['cust'])
-        if row['year'] == 2018:
+        grouping_attr = str(row['month'])
+        if True:
             for key in groupby:
                 grouping_var = 0 
                 grouping_attrs = key.split(',')
@@ -90,29 +67,10 @@ def query():
                     if item.isnumeric():
                         grouping_attrs[grouping_attrs.index(item)] = int(item)
                 # Generated code as seen in helper.py methods.
-                item_cust = grouping_attrs[0]
+                item_month = grouping_attrs[0]
                 
-                if row['cust'] ==  item_cust  and row['state'] == 'NJ' and row['year'] == 2018:
+                if row['month'] ==  item_month  and row['year'] == 2019:
                     grouping_var = 2
-                else:
-                    continue
-                change_group = groupby[key]
-                update_agg_value(change_group, grouping_var, row)
-            
-    for row in data:
-        grouping_attr = str(row['cust'])
-        if row['year'] == 2018:
-            for key in groupby:
-                grouping_var = 0 
-                grouping_attrs = key.split(',')
-                for item in grouping_attrs:
-                    if item.isnumeric():
-                        grouping_attrs[grouping_attrs.index(item)] = int(item)
-                # Generated code as seen in helper.py methods.
-                item_cust = grouping_attrs[0]
-                
-                if row['cust'] ==  item_cust  and row['state'] == 'CT' and row['year'] == 2018:
-                    grouping_var = 3
                 else:
                     continue
                 change_group = groupby[key]
@@ -128,8 +86,8 @@ def query():
                 else:
                     groupby[grouping_attr_key][agg_func_key] = avg_list[0]/avg_list[1] 
     # Step 4: Filter out table using the having clause.
-        if groupby[grouping_attr_key]['1_sum_quant'] > 2 * groupby[grouping_attr_key]['2_sum_quant'] or groupby[grouping_attr_key]['1_avg_quant'] > groupby[grouping_attr_key]['3_avg_quant']:
-            _global.append({ 'cust': grouping_attr_key,'0_sum_quant':groupby[grouping_attr_key]['0_sum_quant'],'1_sum_quant':groupby[grouping_attr_key]['1_sum_quant'],'2_sum_quant':groupby[grouping_attr_key]['2_sum_quant'],'3_sum_quant':groupby[grouping_attr_key]['3_sum_quant'],})
+        if True:
+            _global.append({ 'month': grouping_attr_key,'1_max_quant':groupby[grouping_attr_key]['1_max_quant'],'2_max_quant':groupby[grouping_attr_key]['2_max_quant'],})
         
     
     return tabulate.tabulate(_global,
